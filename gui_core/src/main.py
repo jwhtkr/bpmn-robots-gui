@@ -26,7 +26,6 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
     def file_submitted(self):
         """Switch to main page when a file submitted."""
         self.mainStackedWidget.setCurrentIndex(1)
-        
 
 APP = QtWidgets.QApplication(sys.argv)
 WINDOW = GuiMainWindow()
