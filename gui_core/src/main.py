@@ -12,7 +12,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         super(GuiMainWindow, self).__init__()
         rospy.init_node("GUI_Node")
         self.setupUi(self)
-        self.mainStackedWidget.setCurrentIndex(0)
+        self.mainStackedWidget.setCurrentIndex(1)
         self.fileSelectButton.clicked.connect(self.select_file)
         self.submitButton.clicked.connect(self.file_submitted)
     def select_file(self):
@@ -26,7 +26,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
     def file_submitted(self):
         """Switch to main page when a file submitted."""
         self.mainStackedWidget.setCurrentIndex(1)
-
+        
 
 APP = QtWidgets.QApplication(sys.argv)
 WINDOW = GuiMainWindow()
