@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """This module contains the GUI"""
 
 import sys

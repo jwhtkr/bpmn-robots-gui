@@ -2,7 +2,7 @@
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
-from gui_msgs.msgs import GuiData
+from gui_msgs.msg import GuiData
 
 
 class DataModel(QtCore.QAbstractListModel):
