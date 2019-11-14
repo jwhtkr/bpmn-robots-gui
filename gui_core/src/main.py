@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 from models import DataModel
 from Ui_main_window import Ui_GUI
+from gui_msgs.msg import GuiData, Variable
 
 
 class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
@@ -25,14 +26,16 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.setAttribute(Qt.WA_DeleteOnClose)
 
         self.confirm_button.setVisible(False)
-        self.test_signal = [('signal', 'this is a signal', [])]
-        self.test_input = [('input', 'this is an input', [])]
+        self.test_variable = Variable("var1", "var1type", None)
+        self.test_variable2 = Variable("var2", "var2type", None)
+        self.test_signal = GuiData(
+            "signal1", "signal1 description", [self.test_variable, self.test_variable2])
 
         self.signal_list_model = DataModel(self.test_signal)
         self.signal_list.setModel(self.signal_list_model)
         self.signal_list.clicked.connect(self.signal_clicked)
 
-        self.user_input_list_mode = DataModel(self.test_input)
+        self.user_input_list_mode = DataModel(self.test_signal)
         self.input_list.setModel(self.user_input_list_mode)
         self.input_list.clicked.connect(self.input_clicked)
 
@@ -83,23 +86,29 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         Display signal information when clicked in the list.
         """
         self.input_list.selectionModel().clearSelection()
+        for idx in reversed(range(self.variable_form.count())):
+            self.variable_form.itemAt(idx).widget().setParent(None)
         self.confirm_button.setVisible(True)
         self.name_of_selected.setText(
-            self.signal_list_model.data_list[index.row()][0])
+            self.signal_list_model.data_list[index.row()].name)
         self.description_of_selected.setText(
-            self.signal_list_model.data_list[index.row()][1])
+            self.signal_list_model.data_list[index.row()].description)
         self.prompt_of_selected.setText("Would you like to send this signal?")
+        self.display_form(
+            self.signal_list_model.data_list[index.row()].variables)
 
     def input_clicked(self, index):
         """
         Display input information when clicked in the list.
         """
         self.signal_list.selectionModel().clearSelection()
+        for idx in reversed(range(self.variable_form.count())):
+            self.variable_form.itemAt(idx).widget().setParent(None)
         self.confirm_button.setVisible(True)
         self.name_of_selected.setText(
-            self.user_input_list_mode.data_list[index.row()][0])
+            self.user_input_list_mode.data_list[index.row()].name)
         self.description_of_selected.setText(
-            self.user_input_list_mode.data_list[index.row()][1])
+            self.user_input_list_mode.data_list[index.row()].description)
         self.prompt_of_selected.setText("Would fufill this request?")
 
     def refresh_clicked(self):
@@ -112,8 +121,8 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.user_input_list_mode.layoutChanged.emit()
         self.reset_labels()
 
-        temp_data = [('signal1', 'this is a signal', []),
-                     ('signal2', 'adding a signal worked', [])]
+        temp_data = [GuiData("signal1", "adding a signal worked", []),
+                     GuiData('signal2', 'adding a signal worked', [])]
         add_data(self.signal_list_model, temp_data)
 
     def reset_labels(self):
@@ -125,6 +134,21 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.description_of_selected.setText("")
         self.signal_list.selectionModel().clearSelection()
         self.input_list.selectionModel().clearSelection()
+
+    def display_form(self, data):
+        """
+        Display labels of variables and line edits for taking user inputs.
+        """
+        for idx, variable in enumerate(data):
+            label = QtWidgets.QLabel(self.user_input_page)
+            label.setObjectName(variable.name)
+            label.setText(variable.name)
+            self.variable_form.setWidget(
+                idx, QtWidgets.QFormLayout.LabelRole, label)
+            line_edit = QtWidgets.QLineEdit(self.user_input_page)
+            line_edit.setObjectName(variable.name + "_line_edit")
+            self.variable_form.setWidget(
+                idx, QtWidgets.QFormLayout.FieldRole, line_edit)
 
 
 def add_data(model, input_data_list):

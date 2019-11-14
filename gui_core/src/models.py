@@ -12,7 +12,7 @@ class DataModel(QtCore.QAbstractListModel):
 
     def __init__(self, data, *args, **kwargs):
         super(DataModel, self).__init__(*args, **kwargs)
-        self.data_list = data
+        self.data_list = [data]
 
     def data(self, index, role):
         """
@@ -20,7 +20,7 @@ class DataModel(QtCore.QAbstractListModel):
         """
         if role == Qt.DisplayRole:
             data = self.data_list[index.row()]
-            return data[0]
+            return data.name
         return None
 
     def rowCount(self, index):  # pylint: disable=invalid-name, unused-argument
