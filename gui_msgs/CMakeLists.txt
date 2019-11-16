@@ -13,7 +13,10 @@ add_message_files(
     Variable.msg
     GuiData.msg
 )
-
+add_service_files(
+  DIRECTORY srv
+  FILES SignalList.srv
+)
 generate_messages(
   DEPENDENCIES
 )
