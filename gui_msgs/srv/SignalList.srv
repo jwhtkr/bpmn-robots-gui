@@ -5,12 +5,9 @@
 #
 # @Brief
 # This service will populate the GUI's list of signals
-#
-# @variables
 # 
-#
-# @success
-# Indicates if the behavior completed successfully or not
+# @signal_list
+# List of all startable signals
 ##
 
 

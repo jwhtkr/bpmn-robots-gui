@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from gui_models import DataModel
 from Ui_main_window import Ui_GUI
 from gui_msgs.msg import GuiData, Variable  # pylint: disable=import-error
-from gui_msgs.srv import SignalList  # pylint: disable=import-error
+from gui_msgs.srv import SignalList, StartMission  # pylint: disable=import-error
 
 
 class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
@@ -38,9 +38,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
 
         self.connect_buttons()
 
-        self.get_signal_list = rospy.ServiceProxy(
-            rospy.get_param('~signal_list_topic'),
-            SignalList)
+        self.service_setup()
 
     def connect_buttons(self):
         """
@@ -50,13 +48,39 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.submit_button.clicked.connect(self.file_submitted)
         self.confirm_button.clicked.connect(self.confirm_clicked)
         self.refresh_button.clicked.connect(self.refresh_clicked)
+        self.start_mission_button.clicked.connect(self.start_mission_clicked)
+
+    def service_setup(self):
+        """
+        Ready all service proxies for use.
+        """
+        self.get_signal_list = rospy.ServiceProxy(
+            rospy.get_param('~signal_list_topic'),
+            SignalList)
+        self.start_mission = rospy.ServiceProxy(
+            rospy.get_param('~start_mission_topic'),
+            StartMission)
+
+    def start_mission_clicked(self):
+        """
+        Request a mission to be started, grey out the button if successful
+        """
+        start_mission_response = self.start_mission(
+            self.file_path_line_edit.text())
+        if start_mission_response.success:
+            self.start_mission_button.setEnabled(False)
+            self.start_mission_button.setText("Mission Started")
+        else:
+            self.clear_second_page()
+            self.main_stacked_widget.setCurrentIndex(0)
+            QMessageBox.warning(self,
+                                "Failed to open mission!",
+                                start_mission_response.failure)
 
     def confirm_clicked(self):
         """
         Send signal/Send user input when clicked.
         """
-        # for idx in reversed(range(self.variable_form.count())):
-
         if self.signal_list.selectedIndexes():
             QMessageBox.question(self, "Signal Sent",
                                  "I can't believe this worked!",
@@ -122,14 +146,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         """
         Update the signal/input list.
         """
-        self.confirm_button.setVisible(False)
-        self.signal_list_model.data_list = []
-        self.user_input_list_mode.data_list = []
-        self.signal_list_model.layoutChanged.emit()
-        self.user_input_list_mode.layoutChanged.emit()
-        self.reset_labels()
-        for idx in reversed(range(self.variable_form.count())):
-            self.variable_form.itemAt(idx).widget().setParent(None)
+        self.clear_second_page()
         signal_list_response = self.get_signal_list()
         add_data(self.signal_list_model, signal_list_response.signal_list)
 
@@ -157,6 +174,19 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
             line_edit.setObjectName(variable.name + "_line_edit")
             self.variable_form.setWidget(
                 idx, QtWidgets.QFormLayout.FieldRole, line_edit)
+
+    def clear_second_page(self):
+        """
+        Clear the models, turn buttons off, remove variable menus.
+        """
+        self.confirm_button.setVisible(False)
+        self.signal_list_model.data_list = []
+        self.user_input_list_mode.data_list = []
+        self.signal_list_model.layoutChanged.emit()
+        self.user_input_list_mode.layoutChanged.emit()
+        self.reset_labels()
+        for idx in reversed(range(self.variable_form.count())):
+            self.variable_form.itemAt(idx).widget().setParent(None)
 
 
 def add_data(model, input_data_list):

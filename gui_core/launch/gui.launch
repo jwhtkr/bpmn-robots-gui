@@ -4,8 +4,11 @@
   <arg name="signal_list_topic"         default="signal_list_topic"         />
   <arg name="start_mission_topic"       default="start_mission_topic"       />
   
-  <node name="dummy_signal_handler" type ="dummy_signal_handler.py" pkg ="gui_dummy_nodes">
+  <node name="dummy_signal_handler_node" type ="dummy_signal_handler_node.py" pkg ="gui_dummy_nodes">
     <param name="signal_list_topic"   value="$(arg signal_list_topic)"/>
+  </node>
+
+  <node name="dummmy_start_mission_node" type ="dummy_start_mission_node.py" pkg ="gui_dummy_nodes">
     <param name="start_mission_topic" value="$(arg start_mission_topic)"/>
   </node>
 
@@ -13,4 +16,6 @@
     <param name="signal_list_topic"   value="$(arg signal_list_topic)"/>
     <param name="start_mission_topic" value="$(arg start_mission_topic)"/>
   </node>
+
+
 </launch>
