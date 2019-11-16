@@ -8,9 +8,10 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
-from models import DataModel
+from gui_models import DataModel
 from Ui_main_window import Ui_GUI
-from gui_msgs.msg import GuiData, Variable
+from gui_msgs.msg import GuiData, Variable  # pylint: disable=import-error
+from gui_msgs.srv import SignalList  # pylint: disable=import-error
 
 
 class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
@@ -22,24 +23,24 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         super(GuiMainWindow, self).__init__()
         rospy.init_node("GUI_Node")
         self.setupUi(self)
-        self.main_stacked_widget.setCurrentIndex(1)
+        self.main_stacked_widget.setCurrentIndex(0)
         self.setAttribute(Qt.WA_DeleteOnClose)
 
         self.confirm_button.setVisible(False)
-        self.test_variable = Variable("var1", "var1type", None)
-        self.test_variable2 = Variable("var2", "var2type", None)
-        self.test_signal = GuiData(
-            "signal1", "signal1 description", [self.test_variable, self.test_variable2])
 
-        self.signal_list_model = DataModel(self.test_signal)
+        self.signal_list_model = DataModel()
         self.signal_list.setModel(self.signal_list_model)
         self.signal_list.clicked.connect(self.signal_clicked)
 
-        self.user_input_list_mode = DataModel(self.test_signal)
+        self.user_input_list_mode = DataModel()
         self.input_list.setModel(self.user_input_list_mode)
         self.input_list.clicked.connect(self.input_clicked)
 
         self.connect_buttons()
+
+        self.get_signal_list = rospy.ServiceProxy(
+            rospy.get_param('signal_list_topic'),
+            SignalList)
 
     def connect_buttons(self):
         """
@@ -54,6 +55,8 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         """
         Send signal/Send user input when clicked.
         """
+        # for idx in reversed(range(self.variable_form.count())):
+
         if self.signal_list.selectedIndexes():
             QMessageBox.question(self, "Signal Sent",
                                  "I can't believe this worked!",
@@ -80,11 +83,14 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         Switch to main page when a file submitted.
         """
         self.main_stacked_widget.setCurrentIndex(1)
+        signal_list_response = self.get_signal_list()
+        add_data(self.signal_list_model, signal_list_response.signal_list)
 
     def signal_clicked(self, index):
         """
         Display signal information when clicked in the list.
         """
+        self.confirm_button.setVisible(True)
         self.input_list.selectionModel().clearSelection()
         for idx in reversed(range(self.variable_form.count())):
             self.variable_form.itemAt(idx).widget().setParent(None)
@@ -101,6 +107,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         """
         Display input information when clicked in the list.
         """
+        self.confirm_button.setVisible(True)
         self.signal_list.selectionModel().clearSelection()
         for idx in reversed(range(self.variable_form.count())):
             self.variable_form.itemAt(idx).widget().setParent(None)
@@ -115,15 +122,16 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         """
         Update the signal/input list.
         """
+        self.confirm_button.setVisible(False)
         self.signal_list_model.data_list = []
         self.user_input_list_mode.data_list = []
         self.signal_list_model.layoutChanged.emit()
         self.user_input_list_mode.layoutChanged.emit()
         self.reset_labels()
-
-        temp_data = [GuiData("signal1", "adding a signal worked", []),
-                     GuiData('signal2', 'adding a signal worked', [])]
-        add_data(self.signal_list_model, temp_data)
+        for idx in reversed(range(self.variable_form.count())):
+            self.variable_form.itemAt(idx).widget().setParent(None)
+        signal_list_response = self.get_signal_list()
+        add_data(self.signal_list_model, signal_list_response.signal_list)
 
     def reset_labels(self):
         """
@@ -160,7 +168,8 @@ def add_data(model, input_data_list):
         model.layoutChanged.emit()
 
 
-APP = QtWidgets.QApplication(sys.argv)
-WINDOW = GuiMainWindow()
-WINDOW.show()
-APP.exec_()
+if __name__ == "__main__":
+    APP = QtWidgets.QApplication(sys.argv)
+    WINDOW = GuiMainWindow()
+    WINDOW.show()
+    APP.exec_()
