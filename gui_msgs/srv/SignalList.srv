@@ -1,0 +1,18 @@
+##
+# @File: SignalList.srv
+# @Date: 16 November 2019
+# @Author: Ryan Jacobson
+#
+# @Brief
+# This service will populate the GUI's list of signals
+#
+# @variables
+# 
+#
+# @success
+# Indicates if the behavior completed successfully or not
+##
+
+
+---
+gui_msgs/GuiData[] signal_list
