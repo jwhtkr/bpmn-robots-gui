@@ -39,7 +39,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.connect_buttons()
 
         self.get_signal_list = rospy.ServiceProxy(
-            rospy.get_param('signal_list_topic'),
+            rospy.get_param('~signal_list_topic'),
             SignalList)
 
     def connect_buttons(self):

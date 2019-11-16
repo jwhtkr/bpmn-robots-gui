@@ -17,7 +17,9 @@ def provide_signal_list(request):  # pylint: disable=unused-argument
 
 def signal_list_server():
     rospy.init_node('signal_list_handler_dummy')
-    rospy.Service(rospy.get_param('signal_list_topic'),
+    test = rospy.get_param('~signal_list_topic')
+    print test
+    rospy.Service(test,
                   SignalList,
                   provide_signal_list)
     rospy.spin()

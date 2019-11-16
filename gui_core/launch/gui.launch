@@ -1,0 +1,16 @@
+<!-- ros_node_server.launch -->
+
+<launch>
+  <arg name="signal_list_topic"         default="signal_list_topic"         />
+  <arg name="start_mission_topic"       default="start_mission_topic"       />
+  
+  <node name="dummy_signal_handler" type ="dummy_signal_handler.py" pkg ="gui_dummy_nodes">
+    <param name="signal_list_topic"   value="$(arg signal_list_topic)"/>
+    <param name="start_mission_topic" value="$(arg start_mission_topic)"/>
+  </node>
+
+  <node name="gui_core" type ="main.py" pkg ="gui_core">
+    <param name="signal_list_topic"   value="$(arg signal_list_topic)"/>
+    <param name="start_mission_topic" value="$(arg start_mission_topic)"/>
+  </node>
+</launch>
