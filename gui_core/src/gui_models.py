@@ -2,7 +2,6 @@
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
-from gui_msgs.msg import GuiData
 
 
 class DataModel(QtCore.QAbstractListModel):
@@ -10,9 +9,9 @@ class DataModel(QtCore.QAbstractListModel):
     Class to represent avaliable signals to send or inputs to receive.
     """
 
-    def __init__(self, data, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(DataModel, self).__init__(*args, **kwargs)
-        self.data_list = [data]
+        self.data_list = []
 
     def data(self, index, role):
         """
