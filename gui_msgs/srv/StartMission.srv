@@ -1,0 +1,22 @@
+##
+# @File: StartMission.srv
+# @Date: 16 November 2019
+# @Author: Ryan Jacobson
+#
+# @Brief
+# This service will start a specified mission from a filepath
+# 
+# @filepath
+# This specifies a path to a .bpmn file
+#
+# @success
+# States whether starting a mission succeeded or failed
+# 
+# @failure
+# If the mission couldn't be started explain why
+##
+
+string filepath
+---
+bool success
+string failure

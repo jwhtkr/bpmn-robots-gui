@@ -15,7 +15,9 @@ add_message_files(
 )
 add_service_files(
   DIRECTORY srv
-  FILES SignalList.srv
+  FILES 
+    SignalList.srv
+    StartMission.srv
 )
 generate_messages(
   DEPENDENCIES
