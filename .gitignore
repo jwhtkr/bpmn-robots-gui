@@ -3,3 +3,4 @@ gui_core/src/main.pyproject.user
 gui_core/src/Ui_main_window.py
 gui_core/src/Ui_main_window.pyc
 gui_core/src/models.pyc
+gui_core/src/gui_models.pyc
