@@ -1,0 +1,22 @@
+##
+# @File: StartSignal.srv
+# @Date: 17 November 2019
+# @Author: Ryan Jacobson
+#
+# @Brief
+# This service will allow the gui to start a signal.
+# 
+# @signal
+# GuiData message with all required information for signal starting.
+#
+# @success
+# States whether the signal could be started successfully
+#
+# @failure_messages
+# An array of strings with failure messages if signal could not be started
+##
+
+gui_msgs/GuiData signal
+---
+bool success
+string[] failure_messages
