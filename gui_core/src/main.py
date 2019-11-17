@@ -54,17 +54,22 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         """
         Ready all service proxies for use.
         """
+        self.signal_list_topic = rospy.get_param('~signal_list_topic')
+        self.start_mission_topic = rospy.get_param('~start_mission_topic')
+
         self.get_signal_list = rospy.ServiceProxy(
-            rospy.get_param('~signal_list_topic'),
+            self.signal_list_topic,
             SignalList)
+
         self.start_mission = rospy.ServiceProxy(
-            rospy.get_param('~start_mission_topic'),
+            self.start_mission_topic,
             StartMission)
 
     def start_mission_clicked(self):
         """
         Request a mission to be started, grey out the button if successful
         """
+        rospy.wait_for_service(self.start_mission_topic, 5)
         start_mission_response = self.start_mission(
             self.file_path_line_edit.text())
         if start_mission_response.success:
@@ -147,6 +152,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         Update the signal/input list.
         """
         self.clear_second_page()
+        rospy.wait_for_service(self.signal_list_topic, 5)
         signal_list_response = self.get_signal_list()
         add_data(self.signal_list_model, signal_list_response.signal_list)
 

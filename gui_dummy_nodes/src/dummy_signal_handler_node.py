@@ -23,7 +23,8 @@ def signal_list_handler():
     Start a signal_list_handler node.
     """
     rospy.init_node('signal_list_handler_dummy')
-    rospy.Service(rospy.get_param('~signal_list_topic'),
+    topic = rospy.get_param('~signal_list_topic')
+    rospy.Service(topic,
                   SignalList,
                   provide_signal_list)
     rospy.spin()
