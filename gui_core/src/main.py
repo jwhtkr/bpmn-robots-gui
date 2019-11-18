@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from gui_models import DataModel
 from Ui_main_window import Ui_GUI
 from gui_msgs.msg import GuiData, Variable  # pylint: disable=import-error
-from gui_msgs.srv import SignalList, StartMission  # pylint: disable=import-error
+from gui_msgs.srv import SignalList, StartMission, SignalSend, SignalSendRequest  # pylint: disable=import-error
 
 
 class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
@@ -37,7 +37,6 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.input_list.clicked.connect(self.input_clicked)
 
         self.connect_buttons()
-
         self.service_setup()
 
     def connect_buttons(self):
@@ -56,6 +55,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         """
         self.signal_list_topic = rospy.get_param('~signal_list_topic')
         self.start_mission_topic = rospy.get_param('~start_mission_topic')
+        self.signal_send_topic = rospy.get_param('~signal_send_topic')
 
         self.get_signal_list = rospy.ServiceProxy(
             self.signal_list_topic,
@@ -64,6 +64,10 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.start_mission = rospy.ServiceProxy(
             self.start_mission_topic,
             StartMission)
+
+        self.send_signal = rospy.ServiceProxy(
+            self.signal_send_topic,
+            SignalSend)
 
     def start_mission_clicked(self):
         """
@@ -87,9 +91,22 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         Send signal/Send user input when clicked.
         """
         if self.signal_list.selectedIndexes():
-            QMessageBox.question(self, "Signal Sent",
-                                 "I can't believe this worked!",
-                                 QMessageBox.Yes | QMessageBox.No)
+            raw_signal = self.signal_list_model.data_list[(
+                self.signal_list.selectedIndexes())[0].row()]
+            signal = GuiData(
+                raw_signal.name, raw_signal.description, raw_signal.variables)
+            signal_send_request = SignalSendRequest(signal)
+            response = self.send_signal(signal_send_request)
+            if response.success:
+                QMessageBox.question(self, "Signal Sent",
+                                     "Signal sent successfully!",
+                                     QMessageBox.Yes | QMessageBox.No)
+            else:
+                printable_failure_messages = ''
+                for message in response.failure_messages:
+                    printable_failure_messages += message + '\n'
+                QMessageBox.warning(self, "Failed to Send Signal",
+                                    printable_failure_messages)
         elif self.input_list.selectedIndexes():
             QMessageBox.question(self, "Input Data Sent",
                                  "WOOOOOOOOO!",

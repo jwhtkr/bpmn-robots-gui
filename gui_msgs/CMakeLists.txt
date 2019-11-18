@@ -18,6 +18,7 @@ add_service_files(
   FILES 
     SignalList.srv
     StartMission.srv
+    SignalSend.srv
 )
 generate_messages(
   DEPENDENCIES
