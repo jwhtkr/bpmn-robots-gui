@@ -14,7 +14,7 @@
     <param name="start_mission_topic" value="$(arg start_mission_topic)"/>
   </node>
 
-  <node name="gui_core" type ="main.py" pkg ="gui_core">
+  <node name="gui_core" type ="main.py" pkg ="gui_core" output="screen">
     <param name="signal_list_topic"   value="$(arg signal_list_topic)"/>
     <param name="start_mission_topic" value="$(arg start_mission_topic)"/>
     <param name="signal_send_topic"   value="$(arg signal_send_topic)"/>

@@ -261,7 +261,11 @@
                </widget>
               </item>
               <item>
-               <layout class="QFormLayout" name="variable_form"/>
+               <layout class="QVBoxLayout" name="verticalLayout">
+                <item>
+                 <layout class="QFormLayout" name="variable_form"/>
+                </item>
+               </layout>
               </item>
               <item>
                <widget class="QLabel" name="prompt_of_selected">

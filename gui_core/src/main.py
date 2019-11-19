@@ -95,6 +95,11 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
                 self.signal_list.selectedIndexes())[0].row()]
             signal = GuiData(
                 raw_signal.name, raw_signal.description, raw_signal.variables)
+            print self.variable_form.rowCount()
+            for row in range(self.variable_form.rowCount()):
+                item = self.variable_form.itemAt(
+                    row, QtWidgets.QFormLayout.FieldRole)
+                signal.variables[row].value = item.widget().text()
             signal_send_request = SignalSendRequest(signal)
             response = self.send_signal(signal_send_request)
             if response.success:
@@ -140,6 +145,10 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.input_list.selectionModel().clearSelection()
         for idx in reversed(range(self.variable_form.count())):
             self.variable_form.itemAt(idx).widget().setParent(None)
+        self.variable_form = QtWidgets.QFormLayout()
+        self.variable_form.setObjectName("variable_form")
+        self.verticalLayout.addLayout(self.variable_form)
+
         self.confirm_button.setVisible(True)
         self.name_of_selected.setText(
             self.signal_list_model.data_list[index.row()].name)
@@ -157,6 +166,9 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.signal_list.selectionModel().clearSelection()
         for idx in reversed(range(self.variable_form.count())):
             self.variable_form.itemAt(idx).widget().setParent(None)
+        self.variable_form = QtWidgets.QFormLayout()
+        self.variable_form.setObjectName("variable_form")
+        self.verticalLayout.addLayout(self.variable_form)
         self.confirm_button.setVisible(True)
         self.name_of_selected.setText(
             self.user_input_list_mode.data_list[index.row()].name)
