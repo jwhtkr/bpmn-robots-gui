@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 from gui_models import DataModel
 from Ui_main_window import Ui_GUI
-from gui_msgs.msg import GuiData, Variable  # pylint: disable=import-error
+from gui_msgs.msg import GuiData  # pylint: disable=import-error
 from gui_msgs.srv import SignalList, StartMission, SignalSend, SignalSendRequest  # pylint: disable=import-error
 
 
@@ -21,6 +21,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
 
     def __init__(self):
         super(GuiMainWindow, self).__init__()
+        self.variable_form = None
         rospy.init_node("GUI_Node")
         self.setupUi(self)
         self.main_stacked_widget.setCurrentIndex(0)
@@ -95,7 +96,6 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
                 self.signal_list.selectedIndexes())[0].row()]
             signal = GuiData(
                 raw_signal.name, raw_signal.description, raw_signal.variables)
-            print self.variable_form.rowCount()
             for row in range(self.variable_form.rowCount()):
                 item = self.variable_form.itemAt(
                     row, QtWidgets.QFormLayout.FieldRole)

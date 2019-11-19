@@ -38,7 +38,6 @@ def signal_start(request):
     """
     Take the request signal, check to see if all variables have values.
     """
-    print request
     fail_messages = []
     for variable in request.signal.variables:
         if variable.value == '':
