@@ -37,10 +37,14 @@ def accept_user_input(request):
     """
     Print whether or not user input got accepted.
     """
+    print request.data
     fail_messages = []
     for variable in request.data.variables:
         if variable.value == '':
             fail_messages.append(variable.name + " does not have a value!")
+        if (variable.type == ('int' or 'float')) and (not variable.value.isdigit()):
+            fail_messages.append(
+                variable.name + " does not have the correct value for type: " + variable.type)
     if fail_messages == []:
         return ProvideUserInputResponse(True, [])
     return ProvideUserInputResponse(False, fail_messages)

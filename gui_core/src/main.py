@@ -237,7 +237,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         for idx, variable in enumerate(data):
             label = QtWidgets.QLabel(self.user_input_page)
             label.setObjectName(variable.name)
-            label.setText(variable.name)
+            label.setText(variable.name + ' ' + variable.type + ':')
             self.variable_form.setWidget(
                 idx, QtWidgets.QFormLayout.LabelRole, label)
             line_edit = QtWidgets.QLineEdit(self.user_input_page)
