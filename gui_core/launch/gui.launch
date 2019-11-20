@@ -17,6 +17,9 @@
   </node>
 
   <node name="dummy_input_handler_node" type ="dummy_input_handler_node.py" pkg ="gui_dummy_nodes" output="screen">
+    <param name="input_request_topic"   value="$(arg input_request_topic)"    />
+    <param name="input_response_topic"  value="$(arg input_response_topic)"   />
+  </node>
 
   <node name="gui_core" type ="main.py" pkg ="gui_core" output="screen">
     <param name="signal_list_topic"     value="$(arg signal_list_topic)"      />
