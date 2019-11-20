@@ -1,11 +1,25 @@
 <!-- ros_node_server.launch -->
 
 <launch>
+
   <arg name="signal_list_topic"         default="signal_list_topic"         />
   <arg name="start_mission_topic"       default="start_mission_topic"       />
   <arg name="signal_send_topic"         default="signal_send_topic"         />
-  <arg name="input_request_topic"       default="input_request_topic"       />
-  <arg name="input_response_topic"      default="input_response_topic"      />
+  <arg name="request_user_input_topic"  default="request_user_input_topic"  />
+  <arg name="provide_user_input_topic"  default="provide_user_input_topic"  />
+
+  <node name="gui_core" type ="main.py" pkg ="gui_core" output="screen">
+    <param name="signal_list_topic"         value="$(arg signal_list_topic)"        />
+    <param name="start_mission_topic"       value="$(arg start_mission_topic)"      />
+    <param name="signal_send_topic"         value="$(arg signal_send_topic)"        />
+    <param name="request_user_input_topic"  value="$(arg request_user_input_topic)" />
+    <param name="provide_user_input_topic"  value="$(arg provide_user_input_topic)" />
+  </node>
+
+  <node name="dummy_input_handler_node"     type ="dummy_input_handler_node.py" pkg ="gui_dummy_nodes" output="screen">
+    <param name="request_user_input_topic"  value="$(arg request_user_input_topic)" />
+    <param name="provide_user_input_topic"  value="$(arg provide_user_input_topic)" />
+  </node>
   
   <node name="dummy_signal_handler_node" type ="dummy_signal_handler_node.py" pkg ="gui_dummy_nodes">
     <param name="signal_list_topic"   value="$(arg signal_list_topic)"/>
@@ -14,19 +28,6 @@
 
   <node name="dummmy_start_mission_node" type ="dummy_start_mission_node.py" pkg ="gui_dummy_nodes">
     <param name="start_mission_topic" value="$(arg start_mission_topic)"/>
-  </node>
-
-  <node name="dummy_input_handler_node" type ="dummy_input_handler_node.py" pkg ="gui_dummy_nodes" output="screen">
-    <param name="input_request_topic"   value="$(arg input_request_topic)"    />
-    <param name="input_response_topic"  value="$(arg input_response_topic)"   />
-  </node>
-
-  <node name="gui_core" type ="main.py" pkg ="gui_core" output="screen">
-    <param name="signal_list_topic"     value="$(arg signal_list_topic)"      />
-    <param name="start_mission_topic"   value="$(arg start_mission_topic)"    />
-    <param name="signal_send_topic"     value="$(arg signal_send_topic)"      />
-    <param name="input_request_topic"   value="$(arg input_request_topic)"    />
-    <param name="input_response_topic"  value="$(arg input_response_topic)"   />
   </node>
 
 </launch>

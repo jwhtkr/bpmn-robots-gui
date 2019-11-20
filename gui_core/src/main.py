@@ -10,8 +10,12 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 from gui_models import DataModel
 from Ui_main_window import Ui_GUI
-from gui_msgs.msg import GuiData  # pylint: disable=import-error
-from gui_msgs.srv import SignalList, StartMission, SignalSend, SignalSendRequest  # pylint: disable=import-error
+from gui_msgs.msg import GuiData        # pylint: disable=import-error
+from gui_msgs.srv import (SignalList,   # pylint: disable=import-error
+                          StartMission,
+                          SignalSend, SignalSendRequest,
+                          RequestUserInput, RequestUserInputResponse,
+                          ProvideUserInput, ProvideUserInputRequest)
 
 
 class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
@@ -22,6 +26,8 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
     def __init__(self):
         super(GuiMainWindow, self).__init__()
         self.variable_form = None
+        self.request_input_service = None
+        self.provide_input_service = None
         rospy.init_node("GUI_Node")
         self.setupUi(self)
         self.main_stacked_widget.setCurrentIndex(0)
@@ -33,8 +39,8 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.signal_list.setModel(self.signal_list_model)
         self.signal_list.clicked.connect(self.signal_clicked)
 
-        self.user_input_list_mode = DataModel()
-        self.input_list.setModel(self.user_input_list_mode)
+        self.input_list_model = DataModel()
+        self.input_list.setModel(self.input_list_model)
         self.input_list.clicked.connect(self.input_clicked)
 
         self.connect_buttons()
@@ -57,6 +63,8 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.signal_list_topic = rospy.get_param('~signal_list_topic')
         self.start_mission_topic = rospy.get_param('~start_mission_topic')
         self.signal_send_topic = rospy.get_param('~signal_send_topic')
+        self.request_input_topic = rospy.get_param('~request_user_input_topic')
+        self.provide_input_topic = rospy.get_param('~provide_user_input_topic')
 
         self.get_signal_list = rospy.ServiceProxy(
             self.signal_list_topic,
@@ -70,11 +78,28 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
             self.signal_send_topic,
             SignalSend)
 
+        self.provide_input = rospy.ServiceProxy(
+            self.provide_input_topic,
+            ProvideUserInput
+        )
+
+        self.request_input_service = rospy.Service(self.request_input_topic,
+                                                   RequestUserInput,
+                                                   self.input_request_callback)
+
+    def input_request_callback(self, request):
+        """
+        Add a input request to the input request list.
+        """
+        print request.data
+        add_data(self.input_list_model, [request.data])
+        return RequestUserInputResponse(True, '')
+
     def start_mission_clicked(self):
         """
         Request a mission to be started, grey out the button if successful
         """
-        rospy.wait_for_service(self.start_mission_topic, 5)
+        rospy.wait_for_service(self.start_mission_topic)
         start_mission_response = self.start_mission(
             self.file_path_line_edit.text())
         if start_mission_response.success:
@@ -92,14 +117,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         Send signal/Send user input when clicked.
         """
         if self.signal_list.selectedIndexes():
-            raw_signal = self.signal_list_model.data_list[
-                (self.signal_list.selectedIndexes())[0].row()]
-            signal = GuiData(
-                raw_signal.name, raw_signal.description, raw_signal.uid, raw_signal.variables)
-            for row in range(self.variable_form.rowCount()):
-                item = self.variable_form.itemAt(
-                    row, QtWidgets.QFormLayout.FieldRole)
-                signal.variables[row].value = item.widget().text()
+            signal = self.get_data('signal')
             signal_send_request = SignalSendRequest(signal)
             response = self.send_signal(signal_send_request)
             if response.success:
@@ -112,9 +130,22 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
                 QMessageBox.warning(self, "Failed to Send Signal",
                                     printable_failure_messages)
         elif self.input_list.selectedIndexes():
-            QMessageBox.question(self, "Input Data Sent",
-                                 "WOOOOOOOOO!",
-                                 QMessageBox.Yes | QMessageBox.No)
+            user_input = self.get_data('input')
+            input_request = ProvideUserInputRequest(user_input)
+            response = self.provide_input(input_request)
+
+            if response.success:
+                self.input_list_model.data_list.pop(
+                    self.input_list.selectedIndexes()[0].row())
+                self.refresh_clicked()
+                QMessageBox.information(self, "Provided User Input!",
+                                        "Input request fufilled!")
+            else:
+                printable_failure_messages = ''
+                for message in response.failure_messages:
+                    printable_failure_messages += message + '\n'
+                QMessageBox.warning(
+                    self, "Failed to Send Signal", printable_failure_messages)
 
     def select_file(self):
         """
@@ -163,17 +194,22 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         """
         self.confirm_button.setVisible(True)
         self.signal_list.selectionModel().clearSelection()
+
         for idx in reversed(range(self.variable_form.count())):
             self.variable_form.itemAt(idx).widget().setParent(None)
         self.variable_form = QtWidgets.QFormLayout()
         self.variable_form.setObjectName("variable_form")
         self.verticalLayout.addLayout(self.variable_form)
+
         self.confirm_button.setVisible(True)
         self.name_of_selected.setText(
-            self.user_input_list_mode.data_list[index.row()].name)
+            self.input_list_model.data_list[index.row()].name)
         self.description_of_selected.setText(
-            self.user_input_list_mode.data_list[index.row()].description)
-        self.prompt_of_selected.setText("Would fufill this request?")
+            self.input_list_model.data_list[index.row()].description)
+        self.prompt_of_selected.setText(
+            "Would you please fufill this request?")
+        self.display_form(
+            self.input_list_model.data_list[index.row()].variables)
 
     def refresh_clicked(self):
         """
@@ -181,8 +217,8 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         """
         self.clear_second_page()
         rospy.wait_for_service(self.signal_list_topic, 5)
-        signal_list_response = self.get_signal_list()
-        add_data(self.signal_list_model, signal_list_response.signal_list)
+
+        add_data(self.signal_list_model, self.get_signal_list().signal_list)
 
     def reset_labels(self):
         """
@@ -213,14 +249,43 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         """
         Clear the models, turn buttons off, remove variable menus.
         """
+        self.signal_list.selectionModel().reset()
+        self.input_list.selectionModel().reset()
         self.confirm_button.setVisible(False)
         self.signal_list_model.data_list = []
-        self.user_input_list_mode.data_list = []
         self.signal_list_model.layoutChanged.emit()
-        self.user_input_list_mode.layoutChanged.emit()
         self.reset_labels()
         for idx in reversed(range(self.variable_form.count())):
             self.variable_form.itemAt(idx).widget().setParent(None)
+
+    def get_data(self, data_type):
+        """
+        Return the raw_data corresponding to the selected signal or input.
+        """
+        if data_type == "signal":
+            raw_signal = self.signal_list_model.data_list[
+                (self.signal_list.selectedIndexes())[0].row()]
+            signal = GuiData(
+                raw_signal.name, raw_signal.description, raw_signal.uid, raw_signal.variables)
+            for row in range(self.variable_form.rowCount()):
+                item = self.variable_form.itemAt(
+                    row, QtWidgets.QFormLayout.FieldRole)
+                signal.variables[row].value = item.widget().text()
+            return signal
+        elif data_type == "input":
+            raw_user_input = self.input_list_model.data_list[
+                (self.input_list.selectedIndexes())[0].row()]
+            user_input = GuiData(
+                raw_user_input.name,
+                raw_user_input.description,
+                raw_user_input.uid,
+                raw_user_input.variables)
+            for row in range(self.variable_form.rowCount()):
+                item = self.variable_form.itemAt(
+                    row, QtWidgets.QFormLayout.FieldRole)
+                user_input.variables[row].value = item.widget().text()
+            return user_input
+        return None
 
 
 def add_data(model, input_data_list):
