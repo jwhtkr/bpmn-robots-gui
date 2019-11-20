@@ -7,7 +7,7 @@ from gui_msgs.srv import StartMission, StartMissionResponse  # pylint: disable=i
 def start_mission(request):
     """Return true after printing the request."""
     if request.filepath == "/home/ryanjacobson/testfolder/bad.bpmn":
-        return StartMissionResponse(False, 'it failed')
+        return StartMissionResponse(False, 'Bad bpmn file, please choose another.')
     return StartMissionResponse(True, '')
 
 

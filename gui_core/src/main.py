@@ -105,6 +105,9 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         if start_mission_response.success:
             self.start_mission_button.setEnabled(False)
             self.start_mission_button.setText("Mission Started")
+            QMessageBox.about(self,
+                              "Mission Started!",
+                              "Successfuly started mission : " + self.mission_name.text())
         else:
             self.clear_second_page()
             self.main_stacked_widget.setCurrentIndex(0)
@@ -121,8 +124,8 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
             signal_send_request = SignalSendRequest(signal)
             response = self.send_signal(signal_send_request)
             if response.success:
-                QMessageBox.information(self, "Signal Sent",
-                                        "Signal sent successfully!")
+                QMessageBox.about(self, "Signal Sent",
+                                  "Signal sent successfully!")
             else:
                 printable_failure_messages = ''
                 for message in response.failure_messages:
@@ -138,8 +141,8 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
                 self.input_list_model.data_list.pop(
                     self.input_list.selectedIndexes()[0].row())
                 self.refresh_clicked()
-                QMessageBox.information(self, "Provided User Input!",
-                                        "Input request fufilled!")
+                QMessageBox.about(self, "Provided User Input!",
+                                  "Input request fufilled!")
             else:
                 printable_failure_messages = ''
                 for message in response.failure_messages:
