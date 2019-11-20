@@ -1,0 +1,22 @@
+##
+# @File: InputRequest.srv
+# @Date: 19 November 2019
+# @Author: Ryan Jacobson
+#
+# @Brief
+# This service will ask the GUI for user input which will be returned using InputResponse.srv
+# 
+# @data
+# Data that needs values to be filled
+#
+# @success
+# States if the input was added to the request list
+#
+# @failure_message
+# Explains why the input could not be added to the request list
+##
+
+gui_msgs/GuiData data
+---
+bool success
+string[] failure_messages

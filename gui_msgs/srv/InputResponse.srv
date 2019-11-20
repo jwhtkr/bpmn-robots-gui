@@ -1,0 +1,22 @@
+##
+# @File: InputResponse.srv
+# @Date: 19 November 2019
+# @Author: Ryan Jacobson
+#
+# @Brief
+# This service will return populated data from the GUI. 
+# 
+# @data
+# Data that has been populated with user input
+#
+# @success
+# States if the input request was fufilled
+#
+# @failure_message
+# Explains why the input request could not be fufilled
+##
+
+gui_msgs/GuiData data
+---
+bool success
+string[] failure_messages
