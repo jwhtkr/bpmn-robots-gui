@@ -11,8 +11,9 @@ def provide_signal_list(request):  # pylint: disable=unused-argument
     """
     test_variable1 = Variable("var1", "string", None)
     test_variable2 = Variable("var2", "int", None)
-    test_signal1 = GuiData("signal1", "this is a signal without variables", [])
-    test_signal2 = GuiData("signal2", "this is a signal with variables",
+    test_signal1 = GuiData(
+        "signal1", "this is a signal without variables", 0, [])
+    test_signal2 = GuiData("signal2", "this is a signal with variables", 0,
                            [test_variable1, test_variable2])
     signal_list = [test_signal1, test_signal2]
     return SignalListResponse(signal_list)

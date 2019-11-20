@@ -12,6 +12,9 @@
 # @description
 # A description of the signal or input request
 #
+# @uid
+# The unique identifier for the signal or input request
+#
 # @variables
 # An array of variable messages to either populate before sending a signal, or
 # to request to be populated if asking for user input.
@@ -20,4 +23,5 @@
 
 string name
 string description
+uint32 uid
 gui_msgs/Variable[] variables

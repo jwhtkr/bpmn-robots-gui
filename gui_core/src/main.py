@@ -92,10 +92,10 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         Send signal/Send user input when clicked.
         """
         if self.signal_list.selectedIndexes():
-            raw_signal = self.signal_list_model.data_list[(
-                self.signal_list.selectedIndexes())[0].row()]
+            raw_signal = self.signal_list_model.data_list[
+                (self.signal_list.selectedIndexes())[0].row()]
             signal = GuiData(
-                raw_signal.name, raw_signal.description, raw_signal.variables)
+                raw_signal.name, raw_signal.description, raw_signal.uid, raw_signal.variables)
             for row in range(self.variable_form.rowCount()):
                 item = self.variable_form.itemAt(
                     row, QtWidgets.QFormLayout.FieldRole)
@@ -103,9 +103,8 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
             signal_send_request = SignalSendRequest(signal)
             response = self.send_signal(signal_send_request)
             if response.success:
-                QMessageBox.question(self, "Signal Sent",
-                                     "Signal sent successfully!",
-                                     QMessageBox.Yes | QMessageBox.No)
+                QMessageBox.information(self, "Signal Sent",
+                                        "Signal sent successfully!")
             else:
                 printable_failure_messages = ''
                 for message in response.failure_messages:
