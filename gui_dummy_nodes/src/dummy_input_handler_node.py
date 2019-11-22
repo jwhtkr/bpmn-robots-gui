@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """ This module contains the temporary input handler for the GUI"""
-
+import unique_id
 import rospy
+from uuid_msgs.msg import UniqueID
 from gui_msgs.msg import GuiData, Variable  # pylint: disable=import-error
 from gui_msgs.srv import RequestUserInput, ProvideUserInput, ProvideUserInputResponse  # pylint: disable=import-error
 
@@ -18,11 +19,17 @@ def input_handler():
     test_variable1 = Variable("var1", "string", None)
     test_variable2 = Variable("var2", "int", None)
     test_variable3 = Variable("var2", "int", None)
+
+    uuid_list = []
+
+    for _ in range(3):
+        uuid_list.append(unique_id.toMsg(unique_id.fromRandom()))
+
     test_input1 = GuiData(
-        "input1", "this is an input without variables", 0, [])
-    test_input2 = GuiData("input2", "this is an input with variables", 0,
+        "input1", "this is an input without variables", uuid_list[0], [])
+    test_input2 = GuiData("input2", "this is an input with variables", uuid_list[1],
                           [test_variable1, test_variable2])
-    test_input3 = GuiData("input3", "this is an input with variables", 0,
+    test_input3 = GuiData("input3", "this is an input with variables", uuid_list[2],
                           [test_variable1, test_variable2, test_variable3])
     rospy.wait_for_service(request_topic)
     request_input = rospy.ServiceProxy(request_topic, RequestUserInput)

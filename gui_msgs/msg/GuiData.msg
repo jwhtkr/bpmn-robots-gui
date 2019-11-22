@@ -12,7 +12,7 @@
 # @description
 # A description of the signal or input request
 #
-# @uid
+# @uuid
 # The unique identifier for the signal or input request
 #
 # @variables
@@ -23,5 +23,5 @@
 
 string name
 string description
-uint32 uid
+uuid_msgs/UniqueID uuid
 gui_msgs/Variable[] variables

@@ -5,11 +5,12 @@ find_package(catkin REQUIRED
   COMPONENTS
     message_runtime
     message_generation
+    uuid_msgs
 )
 
 
 add_message_files(
-   FILES
+  FILES
     Variable.msg
     GuiData.msg
 )
@@ -24,6 +25,7 @@ add_service_files(
     )
 generate_messages(
   DEPENDENCIES
+    uuid_msgs
 )
 
 

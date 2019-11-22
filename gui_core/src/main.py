@@ -269,7 +269,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
             raw_signal = self.signal_list_model.data_list[
                 (self.signal_list.selectedIndexes())[0].row()]
             signal = GuiData(
-                raw_signal.name, raw_signal.description, raw_signal.uid, raw_signal.variables)
+                raw_signal.name, raw_signal.description, raw_signal.uuid, raw_signal.variables)
             for row in range(self.variable_form.rowCount()):
                 item = self.variable_form.itemAt(
                     row, QtWidgets.QFormLayout.FieldRole)
@@ -281,7 +281,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
             user_input = GuiData(
                 raw_user_input.name,
                 raw_user_input.description,
-                raw_user_input.uid,
+                raw_user_input.uuid,
                 raw_user_input.variables)
             for row in range(self.variable_form.rowCount()):
                 item = self.variable_form.itemAt(

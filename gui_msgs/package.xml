@@ -51,7 +51,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>message_generation</depend>
   <depend>message_runtime</depend>
-
+  <depend>uuid_msgs</depend>
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
