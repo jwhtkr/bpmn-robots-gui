@@ -11,14 +11,14 @@ class DataModel(QtCore.QAbstractListModel):
 
     def __init__(self, *args, **kwargs):
         super(DataModel, self).__init__(*args, **kwargs)
-        self.data_list = []
+        self.items = []
 
     def data(self, index, role):
         """
         Return name of signal/input for display.
         """
         if role == Qt.DisplayRole:
-            data = self.data_list[index.row()]
+            data = self.items[index.row()]
             return data.name
         return None
 
@@ -26,4 +26,11 @@ class DataModel(QtCore.QAbstractListModel):
         """
         Return length of signal/input model.
         """
-        return len(self.data_list)
+        return len(self.items)
+
+    def add_items(self, input_data):
+        """
+        Add an item to the list.
+        """
+        for data in input_data:
+            self.items.append(data)

@@ -5,7 +5,7 @@ import sys
 import os
 import rospy
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 from gui_models import DataModel
@@ -33,6 +33,11 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.main_stacked_widget.setCurrentIndex(0)
         self.setAttribute(Qt.WA_DeleteOnClose)
 
+        self.update_timer = QTimer()
+        self.update_timer.timeout.connect(self.update_lists)
+        self.update_timer.setInterval(1000)
+        self.update_timer.start()
+
         self.confirm_button.setVisible(False)
 
         self.signal_list_model = DataModel()
@@ -55,6 +60,16 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.confirm_button.clicked.connect(self.confirm_clicked)
         self.refresh_button.clicked.connect(self.refresh_clicked)
         self.start_mission_button.clicked.connect(self.start_mission_clicked)
+        self.back_button.clicked.connect(self.back_clicked)
+
+    def update_lists(self):
+        """
+        Update the signal and input list every second.
+        """
+        self.input_list_model.layoutChanged.emit()
+
+    def back_clicked(self):
+        self.main_stacked_widget.setCurrentIndex(0)
 
     def service_setup(self):
         """
@@ -91,8 +106,8 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         """
         Add a input request to the input request list.
         """
-        print request.data
-        add_data(self.input_list_model, [request.data])
+        self.input_list_model.add_items([request.data])
+
         return RequestUserInputResponse(True, '')
 
     def start_mission_clicked(self):
@@ -138,7 +153,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
             response = self.provide_input(input_request)
 
             if response.success:
-                self.input_list_model.data_list.pop(
+                self.input_list_model.items.pop(
                     self.input_list.selectedIndexes()[0].row())
                 self.refresh_clicked()
                 QMessageBox.about(self, "Provided User Input!",
@@ -167,8 +182,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         Switch to main page when a file submitted.
         """
         self.main_stacked_widget.setCurrentIndex(1)
-        signal_list_response = self.get_signal_list()
-        add_data(self.signal_list_model, signal_list_response.signal_list)
+        self.refresh_clicked()
 
     def signal_clicked(self, index):
         """
@@ -184,12 +198,12 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
 
         self.confirm_button.setVisible(True)
         self.name_of_selected.setText(
-            self.signal_list_model.data_list[index.row()].name)
+            self.signal_list_model.items[index.row()].name)
         self.description_of_selected.setText(
-            self.signal_list_model.data_list[index.row()].description)
+            self.signal_list_model.items[index.row()].description)
         self.prompt_of_selected.setText("Would you like to send this signal?")
         self.display_form(
-            self.signal_list_model.data_list[index.row()].variables)
+            self.signal_list_model.items[index.row()].variables)
 
     def input_clicked(self, index):
         """
@@ -206,13 +220,13 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
 
         self.confirm_button.setVisible(True)
         self.name_of_selected.setText(
-            self.input_list_model.data_list[index.row()].name)
+            self.input_list_model.items[index.row()].name)
         self.description_of_selected.setText(
-            self.input_list_model.data_list[index.row()].description)
+            self.input_list_model.items[index.row()].description)
         self.prompt_of_selected.setText(
             "Would you please fufill this request?")
         self.display_form(
-            self.input_list_model.data_list[index.row()].variables)
+            self.input_list_model.items[index.row()].variables)
 
     def refresh_clicked(self):
         """
@@ -221,7 +235,8 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.clear_second_page()
         rospy.wait_for_service(self.signal_list_topic, 5)
 
-        add_data(self.signal_list_model, self.get_signal_list().signal_list)
+        self.signal_list_model.add_items(self.get_signal_list().signal_list)
+        self.input_list_model.layoutChanged.emit()
 
     def reset_labels(self):
         """
@@ -245,6 +260,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
                 idx, QtWidgets.QFormLayout.LabelRole, label)
             line_edit = QtWidgets.QLineEdit(self.user_input_page)
             line_edit.setObjectName(variable.name + "_line_edit")
+            line_edit.setText(variable.value)
             self.variable_form.setWidget(
                 idx, QtWidgets.QFormLayout.FieldRole, line_edit)
 
@@ -255,7 +271,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.signal_list.selectionModel().reset()
         self.input_list.selectionModel().reset()
         self.confirm_button.setVisible(False)
-        self.signal_list_model.data_list = []
+        self.signal_list_model.items = []
         self.signal_list_model.layoutChanged.emit()
         self.reset_labels()
         for idx in reversed(range(self.variable_form.count())):
@@ -266,7 +282,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         Return the raw_data corresponding to the selected signal or input.
         """
         if data_type == "signal":
-            raw_signal = self.signal_list_model.data_list[
+            raw_signal = self.signal_list_model.items[
                 (self.signal_list.selectedIndexes())[0].row()]
             signal = GuiData(
                 raw_signal.name, raw_signal.description, raw_signal.uuid, raw_signal.variables)
@@ -276,7 +292,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
                 signal.variables[row].value = item.widget().text()
             return signal
         elif data_type == "input":
-            raw_user_input = self.input_list_model.data_list[
+            raw_user_input = self.input_list_model.items[
                 (self.input_list.selectedIndexes())[0].row()]
             user_input = GuiData(
                 raw_user_input.name,
@@ -289,15 +305,6 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
                 user_input.variables[row].value = item.widget().text()
             return user_input
         return None
-
-
-def add_data(model, input_data_list):
-    """
-    Add signal/input to model.
-    """
-    for data in input_data_list:
-        model.data_list.append(data)
-        model.layoutChanged.emit()
 
 
 if __name__ == "__main__":
