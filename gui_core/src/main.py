@@ -60,16 +60,23 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.confirm_button.clicked.connect(self.confirm_clicked)
         self.refresh_button.clicked.connect(self.refresh_clicked)
         self.start_mission_button.clicked.connect(self.start_mission_clicked)
-        self.back_button.clicked.connect(self.back_clicked)
 
     def update_lists(self):
         """
         Update the signal and input list every second.
         """
-        self.input_list_model.layoutChanged.emit()
+        rospy.wait_for_service(self.signal_list_topic, 5)
 
-    def back_clicked(self):
-        self.main_stacked_widget.setCurrentIndex(0)
+        updated_signals = self.get_signal_list()
+        print updated_signals
+        self.signal_list_model.layoutAboutToBeChanged.emit()
+        for original_signal in self.signal_list_model.items:
+            if original_signal not in updated_signals.signal_list:
+                print original_signal
+                self.signal_list_model.items.remove(original_signal)
+
+        self.signal_list_model.layoutChanged.emit()
+        self.input_list_model.layoutChanged.emit()
 
     def service_setup(self):
         """
