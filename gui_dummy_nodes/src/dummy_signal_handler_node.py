@@ -28,6 +28,7 @@ class SignalHandler(object):
         self.test_variable1 = Variable("var1", "string", None)
         self.test_variable2 = Variable("var2", "int", None)
         self.uuid_list = []
+        self.count = 0
 
         for _ in range(2):
             self.uuid_list.append(unique_id.toMsg(unique_id.fromRandom()))
@@ -38,19 +39,23 @@ class SignalHandler(object):
         """
         Provide two signals to start. One with no variables and one with.
         """
-
+        self.count += 1
         test_signal1 = GuiData(
             "signal1", "this is a signal without variables", self.uuid_list[0], [])
         test_signal2 = GuiData("signal2", "this is a signal with variables", self.uuid_list[1],
                                [self.test_variable1, self.test_variable2])
         signal_list = [test_signal1, test_signal2]
+        if self.count == 3:
+            test_signal3 = GuiData("signal3", "this is a signal with variables", self.uuid_list[1],
+                                   [self.test_variable1, self.test_variable2])
+            signal_list.append(test_signal3)
+            self.count = 0
         return SignalListResponse(signal_list)
 
     def signal_start(self, request):
         """
         Take the request signal, check to see if all variables have values.
         """
-        print request.signal
         fail_messages = []
         for variable in request.signal.variables:
             if variable.value == '':

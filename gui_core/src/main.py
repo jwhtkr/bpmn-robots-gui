@@ -65,15 +65,23 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         """
         Update the signal and input list every second.
         """
-        rospy.wait_for_service(self.signal_list_topic, 5)
-
         updated_signals = self.get_signal_list()
-        print updated_signals
-        self.signal_list_model.layoutAboutToBeChanged.emit()
-        for original_signal in self.signal_list_model.items:
+        for idx, original_signal in enumerate(self.signal_list_model.items):
             if original_signal not in updated_signals.signal_list:
-                print original_signal
-                self.signal_list_model.items.remove(original_signal)
+                if self.signal_list.selectionModel().selectedIndexes():
+                    current_selection = self.signal_list_model.items[(
+                        self.signal_list.selectedIndexes())[0].row()]
+                    if current_selection == original_signal:
+                        self.clear_form()
+                        self.signal_list.selectionModel().clearSelection()
+                        self.signal_list.selectionModel().reset()
+
+                del self.signal_list_model.items[idx]
+                self.signal_list.selectionModel().clearSelection()
+
+        for new_signal in updated_signals.signal_list:
+            if new_signal not in self.signal_list_model.items:
+                self.signal_list_model.add_items([new_signal])
 
         self.signal_list_model.layoutChanged.emit()
         self.input_list_model.layoutChanged.emit()
@@ -197,6 +205,7 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         """
         self.confirm_button.setVisible(True)
         self.input_list.selectionModel().clearSelection()
+
         for idx in reversed(range(self.variable_form.count())):
             self.variable_form.itemAt(idx).widget().setParent(None)
         self.variable_form = QtWidgets.QFormLayout()
@@ -280,6 +289,12 @@ class GuiMainWindow(QtWidgets.QMainWindow, Ui_GUI):
         self.confirm_button.setVisible(False)
         self.signal_list_model.items = []
         self.signal_list_model.layoutChanged.emit()
+        self.clear_form()
+
+    def clear_form(self):
+        """
+        Clear the variable form.
+        """
         self.reset_labels()
         for idx in reversed(range(self.variable_form.count())):
             self.variable_form.itemAt(idx).widget().setParent(None)

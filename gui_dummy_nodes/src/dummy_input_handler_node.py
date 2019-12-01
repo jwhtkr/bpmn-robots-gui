@@ -58,7 +58,6 @@ class InputHandler(object):
         """
         Print whether or not user input got accepted.
         """
-        print request.data
         fail_messages = []
         for variable in request.data.variables:
             if variable.value == '':

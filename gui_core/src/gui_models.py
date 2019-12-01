@@ -18,8 +18,9 @@ class DataModel(QtCore.QAbstractListModel):
         Return name of signal/input for display.
         """
         if role == Qt.DisplayRole:
-            data = self.items[index.row()]
-            return data.name
+            if index.row() < self.rowCount(None):
+                data = self.items[index.row()]
+                return data.name
         return None
 
     def rowCount(self, index):  # pylint: disable=invalid-name, unused-argument

@@ -21,7 +21,7 @@
     <param name="provide_user_input_topic"  value="$(arg provide_user_input_topic)" />
   </node>
   
-  <node name="dummy_signal_handler_node" type ="dummy_signal_handler_node.py" pkg ="gui_dummy_nodes">
+  <node name="dummy_signal_handler_node" type ="dummy_signal_handler_node.py" pkg ="gui_dummy_nodes" output="screen">
     <param name="signal_list_topic"   value="$(arg signal_list_topic)"/>
     <param name="signal_send_topic"   value="$(arg signal_send_topic)"/>
   </node>
